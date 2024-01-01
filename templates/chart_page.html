@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Charts - {{ titre_filter }}</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+</head>
+<body>
+
+<div class="container mt-5">
+    <h2>{{ titre_filter }}</h2>
+
+    <!-- First Chart: Bar Chart -->
+    <div class="row">
+        <div class="col-md-6">
+            <canvas id="barChart"></canvas>
+        </div>
+        <div class="col-md-6">
+            <canvas id="doughnutChart"></canvas>
+        </div>
+    </div>
+
+    <!-- Second Chart: Doughnut Chart -->
+    <div class="row mt-5">
+        <div class="col-md-12">
+            <canvas id="lineChart"></canvas>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.0/chart.min.js"></script>
+<script>
+    // First Chart: Bar Chart
+    var barChartCanvas = document.getElementById('barChart').getContext('2d');
+    var barChartData = {
+        labels: ['Fake', 'Real'],
+        datasets: [{
+            label: 'Sentiment Count',
+            backgroundColor: ['rgba(255, 99, 132, 0.2)', 'rgba(54, 162, 235, 0.2)'],
+            borderColor: ['rgba(255, 99, 132, 1)', 'rgba(54, 162, 235, 1)'],
+            borderWidth: 1,
+            data: {{ bar_chart_data|default:"[]" }},
+        }, {
+            label: 'Predicted Pabel Count',
+            backgroundColor: ['rgba(255, 205, 86, 0.2)', 'rgba(75, 192, 192, 0.2)', 'rgba(255, 99, 132, 0.2)'],
+            borderColor: ['rgba(255, 205, 86, 1)', 'rgba(75, 192, 192, 1)', 'rgba(255, 99, 132, 1)'],
+            borderWidth: 1,
+            data: {{ doughnut_chart_data|default:"[]" }},
+        }]
+    };
+    var barChart = new Chart(barChartCanvas, {
+        type: 'bar',
+        data: barChartData,
+        options: {
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+
+    // Second Chart: Doughnut Chart
+    var doughnutChartCanvas = document.getElementById('doughnutChart').getContext('2d');
+    var doughnutChartData = {
+        labels: ['Positive', 'Negative', 'Neutral'],
+        datasets: [{
+            data: {{ doughnut_chart_data|default:"[]" }},
+            backgroundColor: ['rgba(255, 205, 86, 0.2)', 'rgba(75, 192, 192, 0.2)', 'rgba(255, 99, 132, 0.2)'],
+            borderColor: ['rgba(255, 205, 86, 1)', 'rgba(75, 192, 192, 1)', 'rgba(255, 99, 132, 1)'],
+            borderWidth: 1
+        }]
+    };
+    var doughnutChart = new Chart(doughnutChartCanvas, {
+        type: 'doughnut',
+        data: doughnutChartData
+    });
+
+    // Third Chart: Line Chart
+    var lineChartCanvas = document.getElementById('lineChart').getContext('2d');
+    var lineChartData = {
+        labels: {{ line_chart_labels|safe }},
+        datasets: [{
+            label: 'Fake Count by Month',
+            borderColor: 'rgba(75, 192, 192, 1)',
+            borderWidth: 1,
+            data: {{ fake_sentiment_data|safe }}
+        }, {
+            label: 'Real Count by Month',
+            borderColor: 'rgba(255, 99, 132, 1)',
+            borderWidth: 1,
+            data: {{ real_sentiment_data|safe }}
+        }, {
+            label: 'Positive Count by Month',
+            borderColor: 'rgba(255, 205, 86, 1)',
+            borderWidth: 1,
+            data: {{ positive_data|safe }}
+        }, {
+            label: 'Negative Count by Month',
+            borderColor: 'rgba(75, 192, 192, 1)',
+            borderWidth: 1,
+            data: {{ negative_data|safe }}
+        }, {
+            label: 'Neutral Count by Month',
+            borderColor: 'rgba(255, 99, 132, 1)',
+            borderWidth: 1,
+            data: {{ neutral_data|safe }}
+        }]
+    };
+    var lineChart = new Chart(lineChartCanvas, {
+        type: 'line',
+        data: lineChartData,
+        options: {
+            scales: {
+                x: {
+                    type: 'category',  // Use 'category' scale for discrete data
+                    labels: {{ line_chart_labels|safe }},
+                },
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+</script>
+
+</body>
+</html>

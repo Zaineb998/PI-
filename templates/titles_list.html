@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Titles List</title>
+    <!-- Include Bootstrap CSS -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="container mt-5">
+
+    <div class="text-center">
+        <h1>Tous les articles</h1>
+    </div>
+
+    <!-- Responsive Bootstrap Form -->
+    <div class="row justify-content-center mt-3">
+        <div class="col-md-6">
+            <form class="form-inline" method="post" action="{% url 'display_titles' %}">
+                {% csrf_token %}
+                <div class="form-group mr-2">
+                    <label for="start_date" class="sr-only">Start Date:</label>
+                    <input type="date" class="form-control" id="start_date" name="start_date" placeholder="Start Date">
+                </div>
+                <div class="form-group mr-2">
+                    <label for="end_date" class="sr-only">End Date:</label>
+                    <input type="date" class="form-control" id="end_date" name="end_date" placeholder="End Date">
+                </div>
+                <button type="submit" class="btn btn-primary">Filter</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add file upload form -->
+    <div class="row justify-content-center mt-3">
+        <div class="col-md-6">
+            <form id="uploadForm" method="post" action="{% url 'upload_data' %}" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="input-group">
+                    <div class="custom-file">
+                        <input type="file" class="custom-file-input" id="myfile" name="myfile" required>
+                        <label class="custom-file-label" for="myfile">Choose file</label>
+                    </div>
+                    <div class="input-group-append">
+                        <button type="button" class="btn btn-outline-secondary" id="uploadButton" onclick="validateUpload()">Upload</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="row mt-3">
+        <div class="col-lg-6 offset-lg-3">
+            <ul class="list-group">
+                {% for entry in grouped_data %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <a href="{% url 'chart_page' entry.titre %}">{{ entry.titre }}</a>
+                        <span>{{ entry.release_date }}</span>
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-lg-12">
+            <canvas id="myChart" width="1200" height="600"></canvas>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    
+    <script>
+        function validateUpload() {
+            // Get the file input element
+            var fileInput = document.getElementById('myfile');
+
+            // Check if a file is selected
+            if (fileInput.files.length > 0) {
+                // Submit the form if a file is selected
+                document.getElementById('uploadForm').submit();
+            } else {
+                // Show an alert or provide feedback to the user
+                alert('Please choose a file before uploading.');
+            }
+        }
+        function initializeChart() {
+        var ctx = document.getElementById('myChart').getContext('2d');
+        var myChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: [
+                    {% for entry in grouped_data %}
+                        "{{ entry.titre }}",
+                    {% endfor %}
+                ],
+                datasets: [{
+                    label: 'Real Predictions',
+                    data: [
+                        {% for entry in grouped_data %}
+                            {{ entry.real_count }},
+                        {% endfor %}
+                    ],
+                    backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    borderWidth: 1
+                }, {
+                    label: 'Fake Predictions',
+                    data: [
+                        {% for entry in grouped_data %}
+                            {{ entry.fake_count }},
+                        {% endfor %}
+                    ],
+                    backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                    borderColor: 'rgba(255, 99, 132, 1)',
+                    borderWidth: 1
+                }, {
+                    label: 'Positive Sentiments',
+                    data: [
+                        {% for entry in grouped_data %}
+                            {{ entry.positive_count }},
+                        {% endfor %}
+                    ],
+                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    borderWidth: 1
+                }, {
+                    label: 'Negative Sentiments',
+                    data: [
+                        {% for entry in grouped_data %}
+                            {{ entry.negative_count }},
+                        {% endfor %}
+                    ],
+                    backgroundColor: 'rgba(255, 206, 86, 0.2)',
+                    borderColor: 'rgba(255, 206, 86, 1)',
+                    borderWidth: 1
+                }, {
+                    label: 'Neutral Sentiments',
+                    data: [
+                        {% for entry in grouped_data %}
+                            {{ entry.neutral_count }},
+                        {% endfor %}
+                    ],
+                    backgroundColor: 'rgba(255, 159, 64, 0.2)',
+                    borderColor: 'rgba(255, 159, 64, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                scales: {
+                    yAxes: [{
+                        ticks: {
+                            beginAtZero: true,
+                            fontSize: 50
+                        }
+                    }],
+                    xAxes: [{
+                        ticks: {
+                            fontSize: 50 
+                        }
+                    }]
+                }
+            }
+        });
+    }
+    window.onload = initializeChart;
+    </script>
+    
+
+    <!-- Include Bootstrap JS and Popper.js -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js"></script>
+
+</body>
+</html>
